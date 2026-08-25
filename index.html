@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Smart To-Do List">
+<title>Smart To-Do List</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:Arial,sans-serif;min-height:100vh;display:flex;justify-content:center;align-items:center;background:linear-gradient(135deg,#667eea,#764ba2);padding:20px}
+.container{width:100%;max-width:625px;background:#fff;padding:30px;border-radius:22px;box-shadow:0 15px 40px rgba(0,0,0,.20)}
+h1{text-align:center;color:#333;margin-bottom:8px;font-size:38px;line-height:1.2}
+.subtitle{text-align:center;color:#777;margin-bottom:25px;font-size:20px}
+.input-section{display:flex;gap:10px}
+#taskInput{flex:1;min-width:0;padding:14px;border:2px solid #ddd;border-radius:10px;font-size:16px;outline:none}
+#taskInput:focus{border-color:#667eea}
+#addBtn{padding:14px 20px;border:0;border-radius:10px;background:#667eea;color:#fff;font-size:15px;font-weight:bold;cursor:pointer}
+#addBtn:hover{background:#566fe0}
+.filters{display:flex;justify-content:center;gap:10px;margin:25px 0}
+.filter{border:0;background:#f1f1f1;padding:9px 18px;border-radius:20px;cursor:pointer;font-size:15px}
+.filter.active{background:#667eea;color:#fff}
+.task-info{display:flex;justify-content:space-between;align-items:center;color:#666;margin-bottom:15px;font-size:16px}
+#clearBtn{border:0;background:transparent;color:#e74c3c;cursor:pointer;font-size:15px}
+#taskList{list-style:none}
+.task{display:flex;align-items:center;gap:12px;padding:15px;margin-bottom:10px;background:#f8f9ff;border-radius:10px;border-left:4px solid #667eea}
+.task span{flex:1;color:#333;font-size:17px}
+.task.completed span{text-decoration:line-through;color:#999}
+.task input{width:18px;height:18px;cursor:pointer}
+.delete-btn{border:0;background:#ffeded;color:#e74c3c;width:32px;height:32px;border-radius:8px;cursor:pointer;font-size:18px}
+#emptyMessage{text-align:center;padding:30px;color:#999}
+#emptyMessage p{font-size:20px;margin-bottom:5px}
+.hidden{display:none!important}
+@media(max-width:600px){body{padding:12px;align-items:center}.container{padding:30px 30px;border-radius:22px}.input-section{flex-direction:column}#addBtn{width:100%;padding:14px}.filters{flex-wrap:wrap}.header{} }
+</style>
+</head>
+<body>
+<div class="container">
+<h1>Smart To-Do List</h1>
+<p class="subtitle">Organize your tasks and stay productive</p>
+<div class="input-section">
+<input type="text" id="taskInput" placeholder="Enter a new task..." maxlength="100">
+<button id="addBtn">Add Task</button>
+</div>
+<div class="filters">
+<button class="filter active" data-filter="all">All</button>
+<button class="filter" data-filter="active">Active</button>
+<button class="filter" data-filter="completed">Completed</button>
+</div>
+<div class="task-info">
+<span id="taskCount">1 task left</span>
+<button id="clearBtn">Clear Completed</button>
+</div>
+<ul id="taskList"></ul>
+<div id="emptyMessage" class="hidden"><p>No tasks yet!</p><span>Add your first task to get started.</span></div>
+</div>
+<script>
+const input=document.getElementById('taskInput'),add=document.getElementById('addBtn'),list=document.getElementById('taskList'),count=document.getElementById('taskCount'),clear=document.getElementById('clearBtn'),empty=document.getElementById('emptyMessage'),filters=document.querySelectorAll('.filter');
+let tasks=JSON.parse(localStorage.getItem('smartTodoTasks')||'null');
+if(!Array.isArray(tasks)||tasks.length===0) tasks=[{id:1,text:'Study HTML & CSS',done:false}];
+let filter='all';
+function save(){localStorage.setItem('smartTodoTasks',JSON.stringify(tasks))}
+function render(){
+ list.innerHTML='';
+ const shown=tasks.filter(t=>filter==='all'||(filter==='active'&&!t.done)||(filter==='completed'&&t.done));
+ shown.forEach(t=>{const li=document.createElement('li');li.className='task'+(t.done?' completed':'');
+ const cb=document.createElement('input');cb.type='checkbox';cb.checked=t.done;
+ const span=document.createElement('span');span.textContent=t.text;
+ const del=document.createElement('button');del.className='delete-btn';del.textContent='✕';del.setAttribute('aria-label','Delete task');
+ cb.onchange=()=>{t.done=cb.checked;save();render()};
+ del.onclick=()=>{tasks=tasks.filter(x=>x.id!==t.id);save();render()};
+ li.append(cb,span,del);list.appendChild(li)});
+ const n=tasks.filter(t=>!t.done).length;count.textContent=n===1?'1 task left':n+' tasks left';empty.classList.toggle('hidden',shown.length!==0);
+}
+function addTask(){const text=input.value.trim();if(!text){input.focus();return}tasks.push({id:Date.now(),text,done:false});save();input.value='';render();input.focus()}
+add.onclick=addTask;input.onkeydown=e=>{if(e.key==='Enter')addTask()};
+clear.onclick=()=>{tasks=tasks.filter(t=>!t.done);save();render()};
+filters.forEach(b=>b.onclick=()=>{filters.forEach(x=>x.classList.remove('active'));b.classList.add('active');filter=b.dataset.filter;render()});
+save();render();
+</script>
+</body>
+</html>
