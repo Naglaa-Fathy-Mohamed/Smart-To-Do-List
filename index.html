@@ -1,326 +1,39 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="Smart To-Do List - Final Project">
-<title>Smart To-Do List | Final Project</title>
-<style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{
-  min-height:100vh;
-  font-family:Arial,Helvetica,sans-serif;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  padding:20px;
-  background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
-}
-.app{width:100%;max-width:650px}
-.hero{display:none}
-.card{
-  width:100%;
-  background:#fff;
-  padding:52px 50px 48px;
-  border-radius:34px;
-  box-shadow:0 15px 40px rgba(0,0,0,.20);
-}
-.card:before{
-  content:"Smart To-Do List";
-  display:block;
-  text-align:center;
-  color:#333;
-  font-size:46px;
-  font-weight:700;
-  line-height:1.15;
-  margin-bottom:20px;
-}
-.card:after{
-  content:"Organize your tasks and stay productive";
-  display:block;
-  text-align:center;
-  color:#777;
-  font-size:23px;
-  line-height:1.35;
-  max-width:500px;
-  margin:0 auto 42px;
-}
-.input-row{display:flex;gap:12px}
-#taskInput{
-  flex:1;min-width:0;
-  height:84px;
-  padding:0 25px;
-  border:3px solid #ddd;
-  border-radius:16px;
-  font-size:22px;
-  color:#333;
-  outline:none;
-}
-#taskInput:focus{border-color:#667eea}
-.primary{
-  height:84px;
-  padding:0 25px;
-  border:0;border-radius:16px;
-  background:#667eea;color:#fff;
-  font-size:19px;font-weight:700;
-  cursor:pointer;
-}
-.primary:hover{background:#5a6fd8}
-.filters{
-  display:flex;
-  justify-content:center;
-  gap:14px;
-  margin:42px 0;
-  flex-wrap:wrap;
-}
-.filter{
-  border:0;
-  background:#f0f0f0;
-  color:#111;
-  padding:15px 27px;
-  border-radius:30px;
-  font-size:19px;
-  cursor:pointer;
-}
-.filter.active{background:#667eea;color:#fff}
-.task-info{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  color:#666;
-  font-size:19px;
-  margin-bottom:18px;
-}
-.clear{
-  border:0;background:transparent;
-  color:#d85c55;
-  font-size:18px;
-  cursor:pointer;
-}
-#taskList{list-style:none}
-.task{
-  display:flex;align-items:center;gap:12px;
-  padding:15px;margin-bottom:10px;
-  background:#f8f9ff;
-  border-radius:10px;
-  border-left:4px solid #667eea;
-}
-.task-checkbox{width:19px;height:19px;accent-color:#667eea}
-.task-text{flex:1;color:#333;font-size:17px;word-break:break-word}
-.task.completed .task-text{text-decoration:line-through;color:#999}
-.task-actions{display:flex;gap:6px}
-.action{width:34px;height:34px;border:0;border-radius:8px;cursor:pointer}
-.edit-btn{background:#e9edff;color:#5265d8}
-.delete-btn{background:#ffeded;color:#e05252}
-.empty{text-align:center;padding:58px 10px 48px;color:#999}
-.empty-icon{display:none}
-.empty h2{font-size:30px;font-weight:400;color:#999;margin-bottom:10px}
-.empty p{font-size:22px;color:#999}
-.hidden{display:none!important}
-footer{display:none}
-
-@media(max-width:600px){
-  body{padding:20px;align-items:center}
-  .card{padding:54px 50px 48px;border-radius:34px}
-  .card:before{font-size:44px}
-  .card:after{font-size:23px;margin-bottom:44px}
-  .input-row{flex-direction:column;gap:17px}
-  #taskInput{height:84px;font-size:21px}
-  .primary{width:100%;height:78px;font-size:20px}
-  .filters{margin:42px 0;gap:14px}
-  .filter{font-size:19px;padding:15px 25px}
-}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Smart To-Do List - Final Project">
+  <title>Smart To-Do List | Final Project</title>
+  <!-- ربط ملف الـ CSS الخارجي -->
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<main class="app">
-  <header class="hero"></header>
-  <section class="card">
-    <div class="input-row">
-      <input id="taskInput" type="text" maxlength="100" placeholder="Enter a new task..." autocomplete="off">
-      <button id="addBtn" class="primary">Add Task</button>
-    </div>
-    <div class="filters" role="group" aria-label="Task filters">
-      <button class="filter active" data-filter="all">All</button>
-      <button class="filter" data-filter="active">Active</button>
-      <button class="filter" data-filter="completed">Completed</button>
-    </div>
-    <div class="task-info">
-      <span id="taskCount">0 tasks left</span>
-      <button id="clearBtn" class="clear">Clear Completed</button>
-    </div>
-    <ul id="taskList" aria-live="polite"></ul>
-    <div id="emptyMessage" class="empty">
-      <div class="empty-icon">✓</div>
-      <h2>No tasks yet!</h2>
-      <p>Add your first task to get started.</p>
-    </div>
-  </section>
-</main>
-<script>const taskInput = document.getElementById("taskInput");
-const addBtn = document.getElementById("addBtn");
-const taskList = document.getElementById("taskList");
-const taskCount = document.getElementById("taskCount");
-const clearBtn = document.getElementById("clearBtn");
-const emptyMessage = document.getElementById("emptyMessage");
-const filters = document.querySelectorAll(".filter");
-
-const STORAGE_KEY = "smartTodoTasks";
-let tasks = loadTasks();
-let currentFilter = "all";
-
-function loadTasks() {
-  try {
-    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
-    return Array.isArray(saved) ? saved : [];
-  } catch {
-    return [];
-  }
-}
-
-function saveTasks() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
-}
-
-function createId() {
-  return Date.now() + Math.random().toString(16).slice(2);
-}
-
-function render() {
-  taskList.innerHTML = "";
-
-  const visibleTasks = tasks.filter(task => {
-    if (currentFilter === "active") return !task.completed;
-    if (currentFilter === "completed") return task.completed;
-    return true;
-  });
-
-  visibleTasks.forEach(task => {
-    const li = document.createElement("li");
-    li.className = `task${task.completed ? " completed" : ""}`;
-
-    const checkbox = document.createElement("input");
-    checkbox.type = "checkbox";
-    checkbox.className = "task-checkbox";
-    checkbox.checked = task.completed;
-    checkbox.setAttribute("aria-label", `Complete ${task.text}`);
-    checkbox.addEventListener("change", () => {
-      task.completed = checkbox.checked;
-      saveTasks();
-      render();
-    });
-
-    const text = document.createElement("span");
-    text.className = "task-text";
-    text.textContent = task.text;
-
-    const actions = document.createElement("div");
-    actions.className = "task-actions";
-
-    const edit = document.createElement("button");
-    edit.className = "action edit-btn";
-    edit.textContent = "✎";
-    edit.title = "Edit task";
-    edit.setAttribute("aria-label", "Edit task");
-    edit.addEventListener("click", () => editTask(task.id));
-
-    const del = document.createElement("button");
-    del.className = "action delete-btn";
-    del.textContent = "✕";
-    del.title = "Delete task";
-    del.setAttribute("aria-label", "Delete task");
-    del.addEventListener("click", () => deleteTask(task.id));
-
-    actions.append(edit, del);
-    li.append(checkbox, text, actions);
-    taskList.appendChild(li);
-  });
-
-  const remaining = tasks.filter(task => !task.completed).length;
-  taskCount.textContent = `${remaining} ${remaining === 1 ? "task" : "tasks"} left`;
-
-  emptyMessage.classList.toggle("hidden", visibleTasks.length !== 0);
-}
-
-function addTask() {
-  const text = taskInput.value.trim();
-
-  if (!text) {
-    taskInput.focus();
-    return;
-  }
-
-  tasks.push({
-    id: createId(),
-    text,
-    completed: false
-  });
-
-  saveTasks();
-  taskInput.value = "";
-  render();
-  taskInput.focus();
-}
-
-function editTask(id) {
-  const task = tasks.find(item => item.id === id);
-  if (!task) return;
-
-  const updated = prompt("Edit your task:", task.text);
-  if (updated === null) return;
-
-  const text = updated.trim();
-  if (!text) return;
-
-  task.text = text;
-  saveTasks();
-  render();
-}
-
-function deleteTask(id) {
-  const task = tasks.find(item => item.id === id);
-  if (!task) return;
-
-  if (confirm(`Delete "${task.text}"?`)) {
-    tasks = tasks.filter(item => item.id !== id);
-    saveTasks();
-    render();
-  }
-}
-
-function clearCompleted() {
-  const completedCount = tasks.filter(task => task.completed).length;
-
-  if (completedCount === 0) {
-    alert("There are no completed tasks to clear.");
-    return;
-  }
-
-  if (confirm(`Delete ${completedCount} completed task(s)?`)) {
-    tasks = tasks.filter(task => !task.completed);
-    saveTasks();
-    render();
-  }
-}
-
-addBtn.addEventListener("click", addTask);
-
-taskInput.addEventListener("keydown", event => {
-  if (event.key === "Enter") addTask();
-});
-
-clearBtn.addEventListener("click", clearCompleted);
-
-filters.forEach(button => {
-  button.addEventListener("click", () => {
-    filters.forEach(item => item.classList.remove("active"));
-    button.classList.add("active");
-    currentFilter = button.dataset.filter;
-    render();
-  });
-});
-
-render();
-</script>
+  <main class="app">
+    <header class="hero"></header>
+    <section class="card">
+      <div class="input-row">
+        <input id="taskInput" type="text" maxlength="100" placeholder="Enter a new task..." autocomplete="off">
+        <button id="addBtn" class="primary">Add Task</button>
+      </div>
+      <div class="filters" role="group" aria-label="Task filters">
+        <button class="filter active" data-filter="all">All</button>
+        <button class="filter" data-filter="active">Active</button>
+        <button class="filter" data-filter="completed">Completed</button>
+      </div>
+      <div class="task-info">
+        <span id="taskCount">0 tasks left</span>
+        <button id="clearBtn" class="clear">Clear Completed</button>
+      </div>
+      <ul id="taskList" aria-live="polite"></ul>
+      <div id="emptyMessage" class="empty">
+        <div class="empty-icon">✓</div>
+        <h2>No tasks yet!</h2>
+        <p>Add your first task to get started.</p>
+      </div>
+    </section>
+  </main>
+  <!-- ربط ملف الـ JavaScript الخارجي -->
+  <script src="script.js"></script>
 </body>
 </html>
