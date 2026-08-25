@@ -19,10 +19,6 @@ body {
   max-width: 650px;
 }
 
-.hero {
-  display: none;
-}
-
 .card {
   width: 100%;
   background: #fff;
@@ -31,20 +27,16 @@ body {
   box-shadow: 0 15px 40px rgba(0, 0, 0, 0.20);
 }
 
-.card:before {
-  content: "Smart To-Do List";
-  display: block;
+.hero h1 {
   text-align: center;
   color: #333;
   font-size: 46px;
   font-weight: 700;
   line-height: 1.15;
-  margin-bottom: 20px;
+  margin-bottom: 10px;
 }
 
-.card:after {
-  content: "Organize your tasks and stay productive";
-  display: block;
+.hero p {
   text-align: center;
   color: #777;
   font-size: 23px;
@@ -212,10 +204,6 @@ body {
   display: none !important;
 }
 
-footer {
-  display: none;
-}
-
 @media (max-width: 600px) {
   body {
     padding: 20px;
@@ -225,10 +213,10 @@ footer {
     padding: 54px 50px 48px;
     border-radius: 34px;
   }
-  .card:before {
+  .hero h1 {
     font-size: 44px;
   }
-  .card:after {
+  .hero p {
     font-size: 23px;
     margin-bottom: 44px;
   }
